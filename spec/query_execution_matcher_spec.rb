@@ -1,37 +1,45 @@
+require 'active_support/core_ext/string/strip'
 require 'query_matchers/query_execution_matcher'
 
 describe QueryMatchers::QueryExecutionMatcher do
+  let(:counter) { double("counter", query_count: 0) }
+  let(:matcher) { described_class.new(4, counter) }
+
   describe "#matches?" do
-    let(:matcher) { described_class.new(4) }
+    before do
+      counter.stub(:execute!)
+    end
+
+    it "executes the target" do
+      matcher.matches?(:whatever)
+      counter.should have_received(:execute!).with(:whatever)
+    end
 
     it "returns true if the number of queries performed matched the expectation" do
-      matcher.matches?(proc { execute_queries(4) }).should == true
+      counter.stub(:query_count) { 4 }
+      matcher.matches?(:whatever).should == true
     end
 
     it "returns false if the number of queries performed doesn't match the expectation" do
-      matcher.matches?(proc { execute_queries(3) }).should == false
+      counter.stub(:query_count) { 3 }
+      matcher.matches?(:whatever).should == false
     end
+  end
 
-    it "only considers INSERT, SELECT, UPDATE, and DELETE operations" do
-      target = proc do
-        perform_sql "INSERT foo"
-        perform_sql "SELECT foo"
-        perform_sql "UPDATE foo"
-        perform_sql "DELETE foo"
-        perform_sql "DANCE foo"
-      end
+  describe "#failure_message" do
+    it "lists the queries performed in the target" do
+      query1 = "SELECT FROM jokes WHERE puns > 3"
+      query2 = "DELETE FROM jokes WHERE inappropriate = 1"
 
-      matcher.matches?(target).should == true
-    end
+      counter.stub(:query_count) { 99 }
+      counter.stub(:queries) { [query1, query2] }
 
-    def execute_queries(n)
-      n.times do
-        perform_sql("SELECT * FROM something")
-      end
-    end
+      matcher.failure_message.should == <<-MESSAGE.strip_heredoc.chomp
+        expected block to execute 4 SQL queries, but executed 99: 
 
-    def perform_sql(sql)
-      ActiveSupport::Notifications.instrument('sql.active_record', sql: sql)
+         - SELECT FROM jokes WHERE puns > 3
+         - DELETE FROM jokes WHERE inappropriate = 1
+       MESSAGE
     end
   end
 end

@@ -1,49 +1,27 @@
 require 'active_support/notifications'
+require 'query_matchers/query_counter'
 
 module QueryMatchers
   class QueryExecutionMatcher
-    OPERATIONS = %w(SELECT INSERT UPDATE DELETE)
-
-    def initialize(expected)
+    def initialize(expected, counter = QueryCounter.new)
       @expected = expected
+      @counter = counter
     end
 
     def matches?(target)
-      @target = target
-      @events = []
+      @counter.execute!(target)
 
-      subscriber = lambda do |*args|
-        event = ActiveSupport::Notifications::Event.new(*args)
-        sql = event.payload[:sql]
-
-        if OPERATIONS.any? {|op| sql.start_with?(op) }
-          @events << event
-        end
-      end
-
-      ActiveSupport::Notifications.subscribed(subscriber, 'sql.active_record', &@target)
-
-      num_queries == @expected
+      @counter.query_count == @expected
     end
 
     def failure_message
       "expected block to execute #{@expected} SQL queries, " <<
-        "but executed #{num_queries}: \n\n" <<
-        query_list.map {|q| " - #{q}" }.join("\n")
+        "but executed #{@counter.query_count}: \n\n" <<
+        @counter.queries.map {|q| " - #{q}" }.join("\n")
     end
 
     def negative_failure_message
       "expected block not to execute #{@expected} SQL queries, but did"
-    end
-
-    private
-
-    def num_queries
-      @events.size
-    end
-
-    def query_list
-      @events.map {|event| event.payload[:sql] }
     end
   end
 end
