@@ -1,6 +1,6 @@
 # QueryMatchers
 
-TODO: Write a gem description
+Match the number of queries performed in any block of code. Allows setting in place regression tests for database performance.
 
 ## Installation
 
@@ -18,11 +18,15 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+```ruby
+expect { magician.magic! }.to execute_queries(43)
+expect { does_not_hit_the_database }.to execute_no_queries
+expect { hits_the_database_once }.to execute_one_query
+```
 
 ## Contributing
 
-1. Fork it ( http://github.com/<my-github-username>/query_matchers/fork )
+1. Fork it
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
