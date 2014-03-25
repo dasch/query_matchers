@@ -19,9 +19,17 @@ Or install it yourself as:
 ## Usage
 
 ```ruby
-expect { magician.magic! }.to execute_queries(43)
-expect { does_not_hit_the_database }.to execute_no_queries
-expect { hits_the_database_once }.to execute_one_query
+require 'query_matchers'
+
+describe "something" do
+  include QueryMatchers
+  
+  it "works!" do
+    expect { magician.magic! }.to execute_queries(43)
+    expect { does_not_hit_the_database }.to execute_no_queries
+    expect { hits_the_database_once }.to execute_one_query
+  end
+end
 ```
 
 ## Contributing
