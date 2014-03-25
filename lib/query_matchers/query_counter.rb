@@ -7,15 +7,6 @@ module QueryMatchers
     end
 
     def execute!(target)
-      subscriber = lambda do |*args|
-        event = ActiveSupport::Notifications::Event.new(*args)
-        sql = event.payload[:sql]
-
-        if OPERATIONS.any? {|op| sql.start_with?(op) }
-          @events << event
-        end
-      end
-
       ActiveSupport::Notifications.subscribed(subscriber, 'sql.active_record', &target)
     end
 
@@ -25,6 +16,19 @@ module QueryMatchers
 
     def queries
       @events.map {|event| event.payload[:sql] }
+    end
+
+    private
+
+    def subscriber
+      lambda do |*args|
+        event = ActiveSupport::Notifications::Event.new(*args)
+        @events << event if count_query?(event.payload[:sql])
+      end
+    end
+
+    def count_query?(sql)
+      OPERATIONS.any? {|op| sql.start_with?(op) }
     end
   end
 end
