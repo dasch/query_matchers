@@ -17,7 +17,8 @@ module QueryMatchers
     def failure_message
       "expected block to execute #{@expected} SQL queries, " <<
         "but executed #{@counter.query_count}: \n\n" <<
-        @counter.queries.map {|q| " - #{q}" }.join("\n")
+        @counter.queries.map {|q| " - #{q}" }.join("\n") << "\n\n" <<
+        "Total queries: #{@counter.query_count}"
     end
 
     def negative_failure_message

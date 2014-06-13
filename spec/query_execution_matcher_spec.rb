@@ -39,6 +39,8 @@ describe QueryMatchers::QueryExecutionMatcher do
 
          - SELECT FROM jokes WHERE puns > 3
          - DELETE FROM jokes WHERE inappropriate = 1
+
+        Total queries: 99
        MESSAGE
     end
   end
