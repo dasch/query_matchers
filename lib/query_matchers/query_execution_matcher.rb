@@ -24,5 +24,9 @@ module QueryMatchers
     def negative_failure_message
       "expected block not to execute #{@expected} SQL queries, but did"
     end
+
+    def supports_block_expectations?
+      true
+    end
   end
 end
