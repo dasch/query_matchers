@@ -21,9 +21,13 @@ module QueryMatchers
         "Total queries: #{@counter.query_count}"
     end
 
-    def negative_failure_message
+    def failure_message_when_negated
       "expected block not to execute #{@expected} SQL queries, but did"
     end
+
+    # RSpec 2 compatibility:
+    alias_method :failure_message_for_should, :failure_message
+    alias_method :failure_message_for_should_not, :failure_message_when_negated
 
     def supports_block_expectations?
       true
