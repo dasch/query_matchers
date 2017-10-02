@@ -42,6 +42,12 @@ describe QueryMatchers::QueryCounter do
     expect(counter.query_count).to eq(1)
   end
 
+  it "counts queries with a bit of whitespace" do
+    counter.execute!(sql_target("  SELECT FROM inventory"))
+
+    expect(counter.query_count).to eq(1)
+  end
+
   it "doesn't count any other type of query" do
     counter.execute!(sql_target("BREAKDANCE"))
 

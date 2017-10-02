@@ -28,7 +28,7 @@ module QueryMatchers
     end
 
     def count_query?(sql)
-      OPERATIONS.any? {|op| sql.start_with?(op) }
+      OPERATIONS.any? {|op| sql.lstrip.start_with?(op) }
     end
   end
 end
