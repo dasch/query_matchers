@@ -54,6 +54,19 @@ describe QueryMatchers::QueryCounter do
     expect(counter.query_count).to eq(0)
   end
 
+  it "ignores Rails 5's schema queries" do
+    counter.execute!(sql_target(<<-SQL))
+      SELECT column_name
+        FROM information_schema.key_column_usage
+       WHERE constraint_name = 'PRIMARY'
+         AND table_schema = DATABASE()
+         AND table_name = 'jokes'
+       ORDER BY ordinal_position
+    SQL
+
+    expect(counter.query_count).to eq(0)
+  end
+
   def sql_target(sql)
     proc { perform_sql(sql) }
   end
