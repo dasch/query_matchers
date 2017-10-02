@@ -1,6 +1,7 @@
 module QueryMatchers
   class QueryCounter
     OPERATIONS = %w(SELECT INSERT UPDATE DELETE)
+    RAILS5_INFORMATION_SCHEMA_REGEX = /^\s*SELECT.+FROM information_schema\./m
 
     def initialize
       @events = []
@@ -28,7 +29,11 @@ module QueryMatchers
     end
 
     def count_query?(sql)
-      OPERATIONS.any? {|op| sql.start_with?(op) }
+      OPERATIONS.any? {|op| sql.lstrip.start_with?(op) } && !ignore_query?(sql)
+    end
+
+    def ignore_query?(sql)
+      sql.match?(RAILS5_INFORMATION_SCHEMA_REGEX)
     end
   end
 end

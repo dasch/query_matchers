@@ -42,8 +42,27 @@ describe QueryMatchers::QueryCounter do
     expect(counter.query_count).to eq(1)
   end
 
+  it "counts queries with a bit of whitespace" do
+    counter.execute!(sql_target("  SELECT FROM inventory"))
+
+    expect(counter.query_count).to eq(1)
+  end
+
   it "doesn't count any other type of query" do
     counter.execute!(sql_target("BREAKDANCE"))
+
+    expect(counter.query_count).to eq(0)
+  end
+
+  it "ignores Rails 5's schema queries" do
+    counter.execute!(sql_target(<<-SQL))
+      SELECT column_name
+        FROM information_schema.key_column_usage
+       WHERE constraint_name = 'PRIMARY'
+         AND table_schema = DATABASE()
+         AND table_name = 'jokes'
+       ORDER BY ordinal_position
+    SQL
 
     expect(counter.query_count).to eq(0)
   end
